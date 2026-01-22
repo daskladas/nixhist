@@ -1,0 +1,34 @@
+[package]
+name = "nixhist"
+version = "1.0.0"
+edition = "2021"
+authors = ["daskladas"]
+description = "A TUI for viewing, comparing, and managing NixOS generations"
+license = "MIT"
+repository = "https://github.com/daskladas/nixhist"
+keywords = ["nixos", "nix", "tui", "generations", "home-manager"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+# TUI framework
+ratatui = "0.28"
+crossterm = "0.28"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+# Error handling
+anyhow = "1"
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Directory paths
+dirs = "5"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
