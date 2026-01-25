@@ -46,8 +46,9 @@ pub fn render(frame: &mut Frame, app: &App) {
 fn render_header(frame: &mut Frame, app: &App, area: Rect) {
     let theme = &app.theme;
 
-    // Header block
+    // Header block - FIX: Add background style first
     let header_block = Block::default()
+        .style(theme.block_style())
         .title(format!(" nixhist · {} ", app.system_info.hostname))
         .title_style(theme.title())
         .borders(Borders::BOTTOM)
@@ -219,7 +220,9 @@ fn render_generation_list(
         theme.border()
     };
 
+    // FIX: Add background style first
     let block = Block::default()
+        .style(theme.block_style())
         .title(format!(" {} ({}) ", title, generations.len()))
         .title_style(if is_focused { theme.title() } else { theme.text_dim() })
         .borders(Borders::ALL)
@@ -312,7 +315,9 @@ fn render_generation_list(
 fn render_packages_tab(frame: &mut Frame, app: &App, area: Rect) {
     let theme = &app.theme;
 
+    // FIX: Add background style first
     let block = Block::default()
+        .style(theme.block_style())
         .title(format!(
             " Packages · Generation #{} ",
             app.packages_gen_id.unwrap_or(0)
@@ -420,7 +425,9 @@ fn render_packages_tab(frame: &mut Frame, app: &App, area: Rect) {
 fn render_diff_tab(frame: &mut Frame, app: &App, area: Rect) {
     let theme = &app.theme;
 
+    // FIX: Add background style first
     let block = Block::default()
+        .style(theme.block_style())
         .title(" Compare Generations ")
         .title_style(theme.title())
         .borders(Borders::ALL)
@@ -571,7 +578,9 @@ fn render_diff_content(
 fn render_manage_tab(frame: &mut Frame, app: &App, area: Rect) {
     let theme = &app.theme;
 
+    // FIX: Add background style first
     let block = Block::default()
+        .style(theme.block_style())
         .title(" Manage Generations ")
         .title_style(theme.title())
         .borders(Borders::ALL)
@@ -697,7 +706,9 @@ fn render_manage_tab(frame: &mut Frame, app: &App, area: Rect) {
 fn render_settings_tab(frame: &mut Frame, app: &App, area: Rect) {
     let theme = &app.theme;
 
+    // FIX: Add background style first
     let block = Block::default()
+        .style(theme.block_style())
         .title(" Settings ")
         .title_style(theme.title())
         .borders(Borders::ALL)

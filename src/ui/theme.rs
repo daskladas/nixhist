@@ -38,6 +38,9 @@ pub struct Theme {
     pub current_marker: Color,
     pub pinned_marker: Color,
     pub boot_marker: Color,
+    
+    // Internal flag for transparent mode
+    is_transparent: bool,
 }
 
 impl Theme {
@@ -82,6 +85,8 @@ impl Theme {
             current_marker: Color::Rgb(184, 187, 38),   // green
             pinned_marker: Color::Rgb(250, 189, 47),    // yellow
             boot_marker: Color::Rgb(131, 165, 152),     // blue
+            
+            is_transparent: false,
         }
     }
 
@@ -117,6 +122,8 @@ impl Theme {
             current_marker: Color::Rgb(163, 190, 140),
             pinned_marker: Color::Rgb(235, 203, 139),
             boot_marker: Color::Rgb(136, 192, 208),
+            
+            is_transparent: false,
         }
     }
 
@@ -125,8 +132,8 @@ impl Theme {
         Self {
             // Base - use terminal defaults
             bg: Color::Reset,
-            fg: Color::Reset,
-            fg_dim: Color::DarkGray,
+            fg: Color::White,          // Bright white for readability
+            fg_dim: Color::Gray,       // Light gray for better readability on transparent background
             
             // Accent
             accent: Color::Cyan,
@@ -137,10 +144,10 @@ impl Theme {
             warning: Color::Yellow,
             error: Color::Red,
             
-            // UI elements
+            // UI elements - all backgrounds transparent
             border: Color::DarkGray,
             border_focused: Color::Cyan,
-            selection_bg: Color::DarkGray,
+            selection_bg: Color::Reset,  // Transparent selection
             selection_fg: Color::White,
             
             // Diff
@@ -152,88 +159,152 @@ impl Theme {
             current_marker: Color::Green,
             pinned_marker: Color::Yellow,
             boot_marker: Color::Cyan,
+            
+            is_transparent: true,
         }
     }
 
-    // Style helpers for common UI patterns
+    // === STYLE HELPERS ===
 
     /// Default text style
     pub fn text(&self) -> Style {
-        Style::default().fg(self.fg).bg(self.bg)
+        if self.is_transparent {
+            Style::default().fg(self.fg)
+        } else {
+            Style::default().fg(self.fg).bg(self.bg)
+        }
     }
 
     /// Dimmed text style
     pub fn text_dim(&self) -> Style {
-        Style::default().fg(self.fg_dim).bg(self.bg)
+        if self.is_transparent {
+            Style::default().fg(self.fg_dim)
+        } else {
+            Style::default().fg(self.fg_dim).bg(self.bg)
+        }
     }
 
     /// Title/header style
     pub fn title(&self) -> Style {
-        Style::default()
-            .fg(self.accent)
-            .bg(self.bg)
-            .add_modifier(Modifier::BOLD)
+        if self.is_transparent {
+            Style::default()
+                .fg(self.accent)
+                .add_modifier(Modifier::BOLD)
+        } else {
+            Style::default()
+                .fg(self.accent)
+                .bg(self.bg)
+                .add_modifier(Modifier::BOLD)
+        }
     }
 
     /// Selected item style
     pub fn selected(&self) -> Style {
-        Style::default()
-            .fg(self.selection_fg)
-            .bg(self.selection_bg)
-            .add_modifier(Modifier::BOLD)
+        if self.is_transparent {
+            Style::default()
+                .fg(self.selection_fg)
+                .add_modifier(Modifier::BOLD)
+        } else {
+            Style::default()
+                .fg(self.selection_fg)
+                .bg(self.selection_bg)
+                .add_modifier(Modifier::BOLD)
+        }
     }
 
     /// Border style (unfocused)
     pub fn border(&self) -> Style {
-        Style::default().fg(self.border).bg(self.bg)
+        if self.is_transparent {
+            Style::default().fg(self.border)
+        } else {
+            Style::default().fg(self.border).bg(self.bg)
+        }
     }
 
     /// Border style (focused)
     pub fn border_focused(&self) -> Style {
-        Style::default().fg(self.border_focused).bg(self.bg)
+        if self.is_transparent {
+            Style::default().fg(self.border_focused)
+        } else {
+            Style::default().fg(self.border_focused).bg(self.bg)
+        }
     }
 
     /// Tab style (inactive)
     pub fn tab_inactive(&self) -> Style {
-        Style::default().fg(self.fg_dim).bg(self.bg)
+        if self.is_transparent {
+            Style::default().fg(self.fg_dim)
+        } else {
+            Style::default().fg(self.fg_dim).bg(self.bg)
+        }
     }
 
     /// Tab style (active)
     pub fn tab_active(&self) -> Style {
-        Style::default()
-            .fg(self.accent)
-            .bg(self.bg)
-            .add_modifier(Modifier::BOLD)
+        if self.is_transparent {
+            Style::default()
+                .fg(self.accent)
+                .add_modifier(Modifier::BOLD)
+        } else {
+            Style::default()
+                .fg(self.accent)
+                .bg(self.bg)
+                .add_modifier(Modifier::BOLD)
+        }
     }
 
     /// Success message style
     pub fn success(&self) -> Style {
-        Style::default().fg(self.success).bg(self.bg)
+        if self.is_transparent {
+            Style::default().fg(self.success)
+        } else {
+            Style::default().fg(self.success).bg(self.bg)
+        }
     }
 
     /// Warning message style
     pub fn warning(&self) -> Style {
-        Style::default().fg(self.warning).bg(self.bg)
+        if self.is_transparent {
+            Style::default().fg(self.warning)
+        } else {
+            Style::default().fg(self.warning).bg(self.bg)
+        }
     }
 
     /// Error message style
     pub fn error(&self) -> Style {
-        Style::default().fg(self.error).bg(self.bg)
+        if self.is_transparent {
+            Style::default().fg(self.error)
+        } else {
+            Style::default().fg(self.error).bg(self.bg)
+        }
     }
 
     /// Added item in diff
     pub fn diff_added(&self) -> Style {
-        Style::default().fg(self.diff_added).bg(self.bg)
+        if self.is_transparent {
+            Style::default().fg(self.diff_added)
+        } else {
+            Style::default().fg(self.diff_added).bg(self.bg)
+        }
     }
 
     /// Removed item in diff
     pub fn diff_removed(&self) -> Style {
-        Style::default().fg(self.diff_removed).bg(self.bg)
+        if self.is_transparent {
+            Style::default().fg(self.diff_removed)
+        } else {
+            Style::default().fg(self.diff_removed).bg(self.bg)
+        }
     }
 
     /// Updated item in diff
     pub fn diff_updated(&self) -> Style {
-        Style::default().fg(self.diff_updated).bg(self.bg)
+        if self.is_transparent {
+            Style::default().fg(self.diff_updated)
+        } else {
+            Style::default().fg(self.diff_updated).bg(self.bg)
+        }
     }
 
     /// Current generation marker
@@ -252,6 +323,15 @@ impl Theme {
     pub fn marker_boot(&self) -> Style {
         Style::default().fg(self.boot_marker)
     }
+
+    /// Block background style - use this for Block widgets
+    pub fn block_style(&self) -> Style {
+        if self.is_transparent {
+            Style::default()
+        } else {
+            Style::default().bg(self.bg)
+        }
+    }
 }
 
 #[cfg(test)]
@@ -262,11 +342,41 @@ mod tests {
     fn test_theme_from_name() {
         let gruvbox = Theme::from_name(ThemeName::Gruvbox);
         assert_eq!(gruvbox.bg, Color::Rgb(40, 40, 40));
+        assert!(!gruvbox.is_transparent);
 
         let nord = Theme::from_name(ThemeName::Nord);
         assert_eq!(nord.bg, Color::Rgb(46, 52, 64));
+        assert!(!nord.is_transparent);
 
         let transparent = Theme::from_name(ThemeName::Transparent);
         assert_eq!(transparent.bg, Color::Reset);
+        assert_eq!(transparent.selection_bg, Color::Reset);
+        assert!(transparent.is_transparent);
+    }
+
+    #[test]
+    fn test_transparent_styles() {
+        let theme = Theme::transparent();
+        
+        // Text should have no background in transparent mode
+        let text_style = theme.text();
+        assert_eq!(text_style.bg, None);
+        
+        // Block should have no background
+        let block_style = theme.block_style();
+        assert_eq!(block_style.bg, None);
+    }
+
+    #[test]
+    fn test_opaque_styles() {
+        let theme = Theme::gruvbox();
+        
+        // Text should have background in opaque mode
+        let text_style = theme.text();
+        assert_eq!(text_style.bg, Some(Color::Rgb(40, 40, 40)));
+        
+        // Block should have background
+        let block_style = theme.block_style();
+        assert_eq!(block_style.bg, Some(Color::Rgb(40, 40, 40)));
     }
 }

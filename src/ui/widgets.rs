@@ -34,11 +34,11 @@ pub fn render_popup(
 
     // Render popup background and border
     let block = Block::default()
+        .style(theme.block_style())          // FIX: Add background style
         .title(format!(" {} ", title))
         .title_style(theme.title())
         .borders(Borders::ALL)
-        .border_style(theme.border_focused())
-        .style(theme.text());
+        .border_style(theme.border_focused());
 
     frame.render_widget(block, popup_area);
 
@@ -219,9 +219,9 @@ pub fn render_loading(
     frame.render_widget(Clear, popup_area);
 
     let block = Block::default()
+        .style(theme.block_style())          // FIX: Add background style
         .borders(Borders::ALL)
-        .border_style(theme.border_focused())
-        .style(theme.text());
+        .border_style(theme.border_focused());
 
     frame.render_widget(block, popup_area);
 
