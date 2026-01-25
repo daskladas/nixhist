@@ -20,12 +20,12 @@ Built with ❤️ for the NixOS community
 
 <table>
   <tr>
-    <td><img src="screenshot01.png" alt="Overview Tab"/><br/><sub><b>Overview</b> - System and Home-Manager generations</sub></td>
-    <td><img src="screenshot02.png" alt="Packages Tab"/><br/><sub><b>Packages</b> - Browse and filter packages</sub></td>
+    <td><img src="assets/screenshot01.png" alt="Overview Tab"/><br/><sub><b>Overview</b> - System and Home-Manager generations</sub></td>
+    <td><img src="assets/screenshot02.png" alt="Packages Tab"/><br/><sub><b>Packages</b> - Browse and filter packages</sub></td>
   </tr>
   <tr>
-    <td><img src="screenshot03.png" alt="Diff Tab"/><br/><sub><b>Diff</b> - Compare generations side-by-side</sub></td>
-    <td><img src="screenshot04.png" alt="Manage Tab"/><br/><sub><b>Manage</b> - Restore, delete, or pin generations</sub></td>
+    <td><img src="assets/screenshot03.png" alt="Diff Tab"/><br/><sub><b>Diff</b> - Compare generations side-by-side</sub></td>
+    <td><img src="assets/screenshot04.png" alt="Manage Tab"/><br/><sub><b>Manage</b> - Restore, delete, or pin generations</sub></td>
   </tr>
 </table>
 
