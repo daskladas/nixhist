@@ -1,157 +1,122 @@
 # nixhist
 
-**A beautiful TUI for viewing, comparing, and managing NixOS generations.**
+<div align="center">
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org/)
-[![NixOS](https://img.shields.io/badge/NixOS-24.11+-5277C3.svg)](https://nixos.org/)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Language](https://img.shields.io/badge/language-Rust-orange.svg)
+![Platform](https://img.shields.io/badge/platform-NixOS-5277C3.svg)
 
----
+**A beautiful TUI for viewing, comparing, and managing NixOS generations**
 
-## Overview
+Built with ❤️ for the NixOS community
 
-`nixhist` is a terminal user interface (TUI) for NixOS that helps you:
+[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Configuration](#configuration)
 
-- **View** all System and Home-Manager generations at a glance
-- **Compare** packages between any two generations
-- **Restore** to a previous generation with one keypress
-- **Delete** old generations safely (with 10-second undo window)
-- **Pin** important generations to protect them from deletion
-
-Built with Rust for speed and reliability. Supports both Flakes and traditional Channels setups.
+</div>
 
 ---
 
-## Screenshots
+## 🎨 Screenshots
 
-```
-┌─ nixhist · thinkpad ─────────────────────────────────────────────────────────┐
-│  [1] Overview │ [2] Packages │ [3] Diff │ [4] Manage │ [5] Settings          │
-├──────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│  ┌─ System (142) ─────────────────┐  ┌─ Home-Manager (89) ───────────────┐  │
-│  │                                │  │                                   │  │
-│  │  ● #142  22.01.26 14:32  24.11 │  │  ● #89  22.01.26 14:35  stable   │  │
-│  │    #141  21.01.26 09:15  24.11 │  │    #88  20.01.26 18:22  stable   │  │
-│  │  ★ #140  18.01.26 11:03  24.11 │  │    #87  18.01.26 11:05  stable   │  │
-│  │    #139  15.01.26 08:44  24.11 │  │  ★ #86  15.01.26 08:45  stable   │  │
-│  │    #138  12.01.26 16:20  24.11 │  │    #85  12.01.26 16:22  stable   │  │
-│  │                                │  │                                   │  │
-│  └────────────────────────────────┘  └───────────────────────────────────┘  │
-│                                                                              │
-│  24.11.20250115 · 6.6.52 · 1847 pkgs · 12.4 GB                              │
-│                                                                              │
-├──────────────────────────────────────────────────────────────────────────────┤
-│  [j/k] Navigate  [Tab] Switch Panel  [Enter] View Packages  [q] Quit        │
-└──────────────────────────────────────────────────────────────────────────────┘
+<table>
+  <tr>
+    <td><img src="screenshot01.png" alt="Overview Tab"/><br/><sub><b>Overview</b> - System and Home-Manager generations</sub></td>
+    <td><img src="screenshot02.png" alt="Packages Tab"/><br/><sub><b>Packages</b> - Browse and filter packages</sub></td>
+  </tr>
+  <tr>
+    <td><img src="screenshot03.png" alt="Diff Tab"/><br/><sub><b>Diff</b> - Compare generations side-by-side</sub></td>
+    <td><img src="screenshot04.png" alt="Manage Tab"/><br/><sub><b>Manage</b> - Restore, delete, or pin generations</sub></td>
+  </tr>
+</table>
 
-Legend: ● = current   ★ = pinned   ⚡ = in bootloader
-```
+## ✨ Features
 
----
+- **5 Tabs** — Overview, Packages, Diff, Manage, Settings
+- **Smart Diff** — Compare any two generations with detailed package analysis
+- **Safe Operations** — Confirmation dialogs, 10s undo timer, pin protection
+- **3 Built-in Themes** — Gruvbox, Nord, Transparent (or create your own!)
+- **Dual Support** — Works with System and Home-Manager generations
+- **Flexible Setup** — Flakes and traditional Channels both supported
+- **Responsive Layout** — Adapts to terminal width automatically
 
-## Features
+### Legend
+- `●` Current generation
+- `★` Pinned generation
+- `⚡` In bootloader
 
-| Feature | Description |
-|---------|-------------|
-| **5 Tabs** | Overview, Packages, Diff, Manage, Settings |
-| **System + Home-Manager** | Supports standalone and NixOS module installations |
-| **Flakes & Channels** | Works with both configuration styles |
-| **3 Themes** | Gruvbox (default), Nord, Transparent |
-| **Responsive Layout** | Auto-switches between side-by-side and tabs based on terminal width |
-| **Safe Operations** | Confirmation dialogs, 10s undo timer, pin protection |
-| **Dry-Run Mode** | Preview what would happen without making changes |
-| **Boot Entry Info** | Shows which generations are in your bootloader |
-
----
-
-## Installation
-
-### Using Nix Flakes (Recommended)
-
-```bash
-# Run directly without installing
-nix run github:daskladas/nixhist
-
-# Or install to your profile
-nix profile install github:daskladas/nixhist
-```
-
-### Add to NixOS Configuration
-
-```nix
-# flake.nix
-{
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixhist.url = "github:daskladas/nixhist";
-  };
-
-  outputs = { self, nixpkgs, nixhist, ... }: {
-    nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [
-        ({ pkgs, ... }: {
-          environment.systemPackages = [
-            nixhist.packages.${pkgs.system}.default
-          ];
-        })
-      ];
-    };
-  };
-}
-```
+## 📦 Installation
 
 ### Build from Source
 
+**Requirements:** Rust toolchain (install via [rustup](https://rustup.rs/))
+
 ```bash
+# Clone the repository
 git clone https://github.com/daskladas/nixhist
 cd nixhist
+
+# Build with Cargo
 cargo build --release
+
+# Run it
 ./target/release/nixhist
 ```
 
----
+> **Note:** Make sure you have `cargo` installed. If not, install it with:
+> ```bash
+> curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+> ```
 
-## Usage
+### Optional: Install to PATH
+
+```bash
+# Copy to ~/.local/bin (make sure it's in your PATH)
+cp target/release/nixhist ~/.local/bin/
+
+# Or system-wide (requires sudo)
+sudo cp target/release/nixhist /usr/local/bin/
+```
+
+> **Coming Soon:** Official nixpkgs package! 🚀
+
+## 🚀 Usage
 
 ```bash
 nixhist              # Normal mode
 nixhist --dry-run    # Preview mode (no changes made)
-nixhist --help       # Show help
-nixhist --version    # Show version
+nixhist --help       # Show all options
 ```
 
 ### Keybindings
 
+#### Global
 | Key | Action |
 |-----|--------|
 | `1-5` | Switch tabs |
 | `j` / `k` | Navigate down / up |
 | `g` / `G` | Jump to top / bottom |
-| `Tab` | Switch panel / focus |
-| `Enter` | Select / confirm |
-| `Space` | Toggle selection (Manage tab) |
-| `/` | Filter packages (Packages tab) |
-| `R` | Restore generation |
-| `D` | Delete generation(s) |
-| `P` | Pin / unpin generation |
-| `Esc` | Cancel / close popup |
+| `Tab` | Switch panel / list |
 | `q` | Quit |
 
-### Tabs
+#### Tab-Specific
+| Tab | Key | Action |
+|-----|-----|--------|
+| **Overview** | `Enter` | View packages in generation |
+| **Packages** | `/` | Filter packages |
+| **Packages** | `Esc` | Clear filter |
+| **Diff** | `Enter` | Select generation |
+| **Diff** | `c` | Clear selections |
+| **Manage** | `Space` | Toggle selection |
+| **Manage** | `R` | Restore generation |
+| **Manage** | `D` | Delete generation(s) |
+| **Manage** | `P` | Pin / unpin generation |
+| **Settings** | `Enter` | Change setting |
 
-1. **Overview** — View System and Home-Manager generations side-by-side
-2. **Packages** — Browse packages in a selected generation with filter
-3. **Diff** — Compare packages between any two generations
-4. **Manage** — Restore, delete, or pin generations
-5. **Settings** — Configure theme, layout, and display options
+## ⚙️ Configuration
 
----
+Configuration is stored in `~/.config/nixhist/config.toml`
 
-## Configuration
-
-Configuration is stored in `~/.config/nixhist/config.toml`:
+### Basic Settings
 
 ```toml
 theme = "gruvbox"      # gruvbox | nord | transparent
@@ -162,117 +127,136 @@ show_nixos_version = true
 show_kernel_version = true
 show_package_count = true
 show_size = true
-show_store_path = false
 show_boot_entry = true
 
 [pinned]
-system = [140, 130, 100]
+system = [140, 130]
 home_manager = [85, 70]
 ```
 
----
+### 🎨 Want to Rice It?
 
-## Safety Features
+Not feeling the default themes? **Create your own!**
+
+The theme system is designed to be easily customizable. Edit `src/ui/theme.rs` to add your own color scheme:
+
+```rust
+pub fn my_custom_theme() -> Self {
+    Self {
+        bg: Color::Rgb(30, 30, 30),           // Your background
+        fg: Color::Rgb(200, 200, 200),        // Your foreground
+        accent: Color::Rgb(255, 100, 100),    // Your accent color
+        // ... customize all colors
+        is_transparent: false,
+    }
+}
+```
+
+Then add it to the `ThemeName` enum in `src/config.rs`:
+
+```rust
+pub enum ThemeName {
+    Gruvbox,
+    Nord,
+    Transparent,
+    MyCustomTheme,  // Add your theme here
+}
+```
+
+> **🎁 Share Your Theme!**  
+> Created an awesome theme? I'd love to see it! Feel free to open an issue or PR with your theme.  
+> I'm happy to include community themes in nixhist so everyone can enjoy them (with full credit to you, of course! ⭐)
+
+Rebuild and enjoy your personalized nixhist! 🎉
+
+## 🛡️ Safety Features
 
 | Feature | Description |
 |---------|-------------|
-| **10-Second Undo** | After deletion, you have 10 seconds to press `U` to cancel |
-| **Pin Protection** | Pinned generations cannot be deleted (unpin first) |
-| **Current Protection** | The current/active generation cannot be deleted |
-| **Confirmation Dialogs** | All destructive actions require confirmation |
-| **Dry-Run Mode** | Test commands without executing them |
-| **Command Preview** | See the exact command before it runs |
+| **10-Second Undo** | Cancel deletions within 10 seconds |
+| **Pin Protection** | Pinned generations cannot be deleted |
+| **Current Protection** | Active generation is always protected |
+| **Confirmation Dialogs** | Review commands before execution |
+| **Dry-Run Mode** | Test operations without making changes |
 
----
+## 🗺️ Roadmap
 
-## Compatibility
+### ✅ v1.0.0 (Current)
+- Full generation management (view, restore, delete, pin)
+- Package browsing with filtering
+- Generation comparison with detailed diff
+- Three built-in themes
+- Responsive layout
 
-| Configuration | Status |
-|---------------|--------|
-| NixOS with Flakes | ✅ Supported |
-| NixOS with Channels | ✅ Supported |
-| Home-Manager (standalone) | ✅ Supported |
-| Home-Manager (NixOS module) | ✅ Supported |
-| systemd-boot | ✅ Supported |
-| GRUB | ✅ Supported |
+### 🚧 v1.1.0 (Planned)
+- Quick-delete: "Delete all older than X days"
+- Quick-delete: "Keep last N generations"
+- Package history tracking
+- Export package lists
 
----
+### 🔮 v1.2.0 (Future)
+- Garbage collection integration
+- Disk space analysis per generation
+- Custom keybinding configuration
 
-## Roadmap
+### 💭 v2.0.0 (Ideas)
+- Multi-machine support
+- Rollback scheduling
+- nixos-rebuild integration
 
-### v1.0.0 (Current)
+## 🐛 Troubleshooting
 
-- [x] View System and Home-Manager generations
-- [x] Package list with filter
-- [x] Diff between two generations
-- [x] Restore to previous generation
-- [x] Delete generations (single and multi-select)
-- [x] Pin generations
-- [x] 3 built-in themes
-- [x] Responsive layout
-- [x] Dry-run mode
-- [x] Boot entry indicator
+<details>
+<summary><b>"Permission denied" when restoring/deleting</b></summary>
 
-### v1.1.0 (Planned)
+System operations require `sudo`. nixhist will prompt for your password automatically.
+</details>
 
-- [ ] Quick-delete: "Delete all older than X days (except pinned)"
-- [ ] Quick-delete: "Keep last N generations"
-- [ ] Package history: Track package across all generations
-- [ ] Export package list to file
+<details>
+<summary><b>Home-Manager not detected</b></summary>
 
-### v1.2.0 (Planned)
-
-- [ ] Garbage collection integration (`nix-collect-garbage`)
-- [ ] Disk space analysis per generation
-- [ ] Search across all tabs
-- [ ] Custom keybinding configuration
-
-### v2.0.0 (Future)
-
-- [ ] Multi-machine support (view generations from remote hosts)
-- [ ] Rollback scheduling (schedule a rollback after testing)
-- [ ] Integration with nixos-rebuild
-
----
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## Troubleshooting
-
-### "Permission denied" when restoring/deleting
-
-System generations require `sudo`. The app will prompt for your password.
-
-### Home-Manager not detected
-
-Make sure Home-Manager is properly installed. Check if one of these paths exists:
+Check if Home-Manager is installed and one of these paths exists:
 - `~/.local/state/home-manager/profiles/` (standalone)
 - `/nix/var/nix/profiles/per-user/$USER/home-manager` (module)
+</details>
 
-### Generations not loading
+<details>
+<summary><b>Generations not loading</b></summary>
 
-Ensure `nix-env` is in your PATH and you have read access to `/nix/var/nix/profiles/`.
+Ensure:
+1. `nix-env` is in your PATH
+2. You have read access to `/nix/var/nix/profiles/`
+</details>
 
----
+## 🤝 Contributing
 
-## License
+Contributions, bug reports, and feature suggestions are very welcome! Feel free to open an issue or pull request.
 
-MIT License — see [LICENSE](LICENSE) for details.
+## 📝 License
 
----
+MIT License - see [LICENSE](LICENSE) for details.
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
-- Built with [ratatui](https://github.com/ratatui-org/ratatui) — the Rust TUI library
+- Built with [ratatui](https://github.com/ratatui-org/ratatui) — the amazing Rust TUI library
 - Inspired by [lazygit](https://github.com/jesseduffield/lazygit) and [btop](https://github.com/aristocratos/btop)
-- Thanks to the NixOS community for the amazing package manager
+- Made possible by the incredible [NixOS](https://nixos.org/) community
+
+---
+
+<div align="center">
+
+### 💝 Made with Love
+
+This project is developed in my free time as a contribution to the NixOS community.  
+I maintain and improve it whenever I can, always striving to make it better.
+
+If you find nixhist useful, consider:
+- ⭐ Starring the repo
+- 🐛 Reporting bugs
+- 💡 Suggesting features
+- 🤝 Contributing code
+
+**Thank you for using nixhist!** 🎉
+
+</div>
