@@ -102,7 +102,7 @@ fn render_status_bar(frame: &mut Frame, app: &App, area: Rect) {
     let hints = match app.active_tab {
         Tab::Overview => "[j/k] Navigate  [Tab] Switch Panel  [Enter] View Packages  [?] Help  [q] Quit",
         Tab::Packages => "[j/k] Navigate  [/] Filter  [Enter] History  [Esc] Back  [q] Quit",
-        Tab::Diff => "[Tab] Switch Dropdown  [j/k] Scroll  [Enter] Select  [q] Quit",
+        Tab::Diff => "[Tab] Switch List  [j/k] Navigate  [Enter] Select  [c] Clear  [q] Quit",
         Tab::Manage => "[Space] Select  [R] Restore  [D] Delete  [P] Pin  [q] Quit",
         Tab::Settings => "[j/k] Navigate  [Enter] Change  [q] Quit",
     };
@@ -421,11 +421,11 @@ fn render_packages_tab(frame: &mut Frame, app: &App, area: Rect) {
     frame.render_widget(count_widget, count_area);
 }
 
-/// Diff tab: Compare two generations
+/// Diff tab: Compare two generations - COMPLETELY REWRITTEN
 fn render_diff_tab(frame: &mut Frame, app: &App, area: Rect) {
     let theme = &app.theme;
 
-    // FIX: Add background style first
+    // Main block
     let block = Block::default()
         .style(theme.block_style())
         .title(" Compare Generations ")
@@ -436,58 +436,170 @@ fn render_diff_tab(frame: &mut Frame, app: &App, area: Rect) {
     let inner = block.inner(area);
     frame.render_widget(block, area);
 
-    // Dropdown selectors at top
-    let selector_area = Rect {
-        x: inner.x,
-        y: inner.y,
-        width: inner.width,
-        height: 2,
-    };
+    // Split into top (selection) and bottom (diff results)
+    let layout = Layout::vertical([
+        Constraint::Length(12),  // Selection lists
+        Constraint::Min(5),      // Diff results
+    ])
+    .split(inner);
 
-    let from_label = format!(
-        "From: [#{} ▼]",
-        app.diff_from_gen.map(|g| g.to_string()).unwrap_or_else(|| "Select".into())
+    // Render selection lists side by side
+    render_diff_selection_lists(frame, app, theme, layout[0]);
+
+    // Render diff results
+    render_diff_results(frame, app, theme, layout[1]);
+}
+
+/// Render the two generation selection lists side by side
+fn render_diff_selection_lists(
+    frame: &mut Frame,
+    app: &App,
+    theme: &Theme,
+    area: Rect,
+) {
+    // Split horizontally for From | To
+    let lists = Layout::horizontal([
+        Constraint::Percentage(50),
+        Constraint::Percentage(50),
+    ])
+    .split(area);
+
+    // Render From list
+    render_diff_gen_list(
+        frame,
+        "From Generation",
+        &app.system_generations,
+        app.diff_from_cursor,
+        app.diff_from_gen,
+        app.diff_focus == 0,
+        theme,
+        lists[0],
     );
-    let to_label = format!(
-        "To: [#{} ▼]",
-        app.diff_to_gen.map(|g| g.to_string()).unwrap_or_else(|| "Select".into())
+
+    // Render To list
+    render_diff_gen_list(
+        frame,
+        "To Generation",
+        &app.system_generations,
+        app.diff_to_cursor,
+        app.diff_to_gen,
+        app.diff_focus == 1,
+        theme,
+        lists[1],
     );
+}
 
-    let from_style = if app.diff_focus == 0 {
-        theme.selected()
+/// Render a single generation selection list
+fn render_diff_gen_list(
+    frame: &mut Frame,
+    title: &str,
+    generations: &[Generation],
+    cursor: usize,
+    selected_id: Option<u32>,
+    is_focused: bool,
+    theme: &Theme,
+    area: Rect,
+) {
+    let border_style = if is_focused {
+        theme.border_focused()
     } else {
-        theme.text()
-    };
-    let to_style = if app.diff_focus == 1 {
-        theme.selected()
-    } else {
-        theme.text()
-    };
-
-    let selector_line = Line::from(vec![
-        Span::styled(from_label, from_style),
-        Span::raw("              "),
-        Span::styled(to_label, to_style),
-    ]);
-
-    let selector_widget = Paragraph::new(selector_line);
-    frame.render_widget(selector_widget, selector_area);
-
-    // Diff results
-    let diff_area = Rect {
-        x: inner.x,
-        y: inner.y + 3,
-        width: inner.width,
-        height: inner.height.saturating_sub(4),
+        theme.border()
     };
 
-    if let Some(diff) = &app.current_diff {
-        render_diff_content(frame, diff, app.diff_scroll, theme, diff_area);
+    // Add selected generation to title if one is selected
+    let full_title = if let Some(id) = selected_id {
+        format!(" {} (#{}) ", title, id)
     } else {
-        let hint = Paragraph::new("Select two generations to compare")
+        format!(" {} ", title)
+    };
+
+    let block = Block::default()
+        .style(theme.block_style())
+        .title(full_title)
+        .title_style(if is_focused { theme.title() } else { theme.text_dim() })
+        .borders(Borders::ALL)
+        .border_style(border_style);
+
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    if generations.is_empty() {
+        let empty_msg = Paragraph::new("No generations found")
             .style(theme.text_dim())
             .alignment(Alignment::Center);
-        frame.render_widget(hint, diff_area);
+        frame.render_widget(empty_msg, inner);
+        return;
+    }
+
+    // Create list items
+    let items: Vec<ListItem> = generations
+        .iter()
+        .enumerate()
+        .map(|(i, gen)| {
+            // Mark selected generation
+            let marker = if Some(gen.id) == selected_id {
+                "● "
+            } else {
+                "  "
+            };
+
+            let text = format!(
+                "{}#{:<4} {}  {}",
+                marker,
+                gen.id,
+                gen.formatted_date(),
+                gen.nixos_version.as_deref().unwrap_or("-"),
+            );
+
+            let style = if i == cursor {
+                theme.selected()
+            } else if Some(gen.id) == selected_id {
+                Style::default().fg(theme.accent)
+            } else {
+                theme.text()
+            };
+
+            ListItem::new(text).style(style)
+        })
+        .collect();
+
+    let list = List::new(items);
+    frame.render_widget(list, inner);
+}
+
+/// Render diff results area
+fn render_diff_results(
+    frame: &mut Frame,
+    app: &App,
+    theme: &Theme,
+    area: Rect,
+) {
+    let block = Block::default()
+        .style(theme.block_style())
+        .title(" Diff Results ")
+        .title_style(theme.text_dim())
+        .borders(Borders::ALL)
+        .border_style(theme.border());
+
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    if app.diff_from_gen.is_none() || app.diff_to_gen.is_none() {
+        let hint = Paragraph::new("Select two generations to compare\n\n[Tab] Switch list  [j/k] Navigate  [Enter] Select")
+            .style(theme.text_dim())
+            .alignment(Alignment::Center)
+            .wrap(Wrap { trim: false });
+        frame.render_widget(hint, inner);
+        return;
+    }
+
+    if let Some(diff) = &app.current_diff {
+        render_diff_content(frame, diff, app.diff_scroll, theme, inner);
+    } else {
+        let loading = Paragraph::new("Calculating diff...")
+            .style(theme.text_dim())
+            .alignment(Alignment::Center);
+        frame.render_widget(loading, inner);
     }
 }
 

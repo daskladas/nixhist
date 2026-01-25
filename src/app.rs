@@ -47,8 +47,10 @@ pub struct App {
     pub packages_selected: usize,
     pub packages_filter: String,
 
-    // Diff tab state
-    pub diff_focus: usize,               // 0 = From dropdown, 1 = To dropdown
+    // Diff tab state - FIX: Add cursors for selection lists
+    pub diff_focus: usize,               // 0 = From list, 1 = To list
+    pub diff_from_cursor: usize,         // NEW: Cursor in From list
+    pub diff_to_cursor: usize,           // NEW: Cursor in To list
     pub diff_from_gen: Option<u32>,
     pub diff_to_gen: Option<u32>,
     pub diff_scroll: usize,
@@ -187,6 +189,8 @@ impl App {
             packages_filter: String::new(),
 
             diff_focus: 0,
+            diff_from_cursor: 0,      // NEW: Initialize cursors
+            diff_to_cursor: 0,        // NEW: Initialize cursors
             diff_from_gen: None,
             diff_to_gen: None,
             diff_scroll: 0,
@@ -379,38 +383,76 @@ impl App {
         Ok(())
     }
 
-    /// Handle keys in Diff tab
+    /// Handle keys in Diff tab - COMPLETELY REWRITTEN
     fn handle_diff_key(&mut self, key: KeyEvent) -> Result<()> {
         match key.code {
             KeyCode::Tab => {
+                // Switch between From and To lists
                 self.diff_focus = (self.diff_focus + 1) % 2;
             }
             KeyCode::Char('j') | KeyCode::Down => {
-                self.diff_scroll += 1;
+                // Navigate in active list
+                if self.diff_focus == 0 {
+                    if self.diff_from_cursor < self.system_generations.len().saturating_sub(1) {
+                        self.diff_from_cursor += 1;
+                    }
+                } else {
+                    if self.diff_to_cursor < self.system_generations.len().saturating_sub(1) {
+                        self.diff_to_cursor += 1;
+                    }
+                }
             }
             KeyCode::Char('k') | KeyCode::Up => {
-                self.diff_scroll = self.diff_scroll.saturating_sub(1);
+                // Navigate in active list
+                if self.diff_focus == 0 {
+                    self.diff_from_cursor = self.diff_from_cursor.saturating_sub(1);
+                } else {
+                    self.diff_to_cursor = self.diff_to_cursor.saturating_sub(1);
+                }
+            }
+            KeyCode::Char('g') => {
+                // Jump to top of active list
+                if self.diff_focus == 0 {
+                    self.diff_from_cursor = 0;
+                } else {
+                    self.diff_to_cursor = 0;
+                }
+            }
+            KeyCode::Char('G') => {
+                // Jump to bottom of active list
+                let max = self.system_generations.len().saturating_sub(1);
+                if self.diff_focus == 0 {
+                    self.diff_from_cursor = max;
+                } else {
+                    self.diff_to_cursor = max;
+                }
             }
             KeyCode::Enter => {
-                // Select generation for current dropdown
-                let selected_id = if self.overview_focus == 0 {
-                    self.system_generations.get(self.overview_system_selected).map(|g| g.id)
+                // Select generation from active list
+                let gen_id = if self.diff_focus == 0 {
+                    self.system_generations.get(self.diff_from_cursor).map(|g| g.id)
                 } else {
-                    None
+                    self.system_generations.get(self.diff_to_cursor).map(|g| g.id)
                 };
 
-                if let Some(id) = selected_id {
+                if let Some(id) = gen_id {
                     if self.diff_focus == 0 {
                         self.diff_from_gen = Some(id);
                     } else {
                         self.diff_to_gen = Some(id);
                     }
 
-                    // Calculate diff if both selected
-                    self.calculate_diff()?;
+                    // Automatically calculate diff if both are selected
+                    if self.diff_from_gen.is_some() && self.diff_to_gen.is_some() {
+                        self.calculate_diff()?;
+                    }
                 }
             }
-            KeyCode::Char('g') => {
+            KeyCode::Char('c') | KeyCode::Char('C') => {
+                // Clear selection
+                self.diff_from_gen = None;
+                self.diff_to_gen = None;
+                self.current_diff = None;
                 self.diff_scroll = 0;
             }
             _ => {}
