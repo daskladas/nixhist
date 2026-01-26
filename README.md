@@ -195,8 +195,9 @@ Rebuild and enjoy your personalized nixhist! 🎉
 - Export package lists
 
 ### 🔮 v1.2.0 (Future)
-- Garbage collection integration
-- Disk space analysis per generation
+- GC Roots tab — View what's keeping packages alive
+- Garbage collection preview — See how much space would be freed
+- Garbage collection — Run `nix-collect-garbage` from TUI
 - Custom keybinding configuration
 
 ### 💭 v2.0.0 (Ideas)
